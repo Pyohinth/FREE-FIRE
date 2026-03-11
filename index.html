@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF Esports Rank Board</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Oswald:wght@500;700&display=swap');
+
+        :root {
+            --pure-gold: #ffd700;
+            --dark-gold: #b8860b;
+            --metallic: linear-gradient(145deg, #2a2a2a, #111111);
+            --gold-glow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+
+        body { 
+            font-family: 'Oswald', sans-serif; 
+            background-color: #050505; 
+            color: white; 
+            text-align: center; 
+            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            padding-bottom: 50px;
+        }
+
+        @keyframes slideInLeft {
+            0% { opacity: 0; transform: translateX(-100px) skewX(-20deg); }
+            100% { opacity: 1; transform: translateX(0) skewX(0); }
+        }
+
+        @keyframes goldPulse {
+            0% { text-shadow: 0 0 5px var(--dark-gold); }
+            50% { text-shadow: 0 0 20px var(--pure-gold), 0 0 30px var(--dark-gold); }
+            100% { text-shadow: 0 0 5px var(--dark-gold); }
+        }
+
+        .main-header { 
+            font-family: 'Orbitron', sans-serif;
+            color: var(--pure-gold);
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            margin: 50px 0;
+            animation: goldPulse 3s infinite;
+            font-size: 3rem;
+        }
+
+        #captureArea { 
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 5px;
+            display: inline-block;
+            min-width: 90%;
+            border: 1px solid var(--dark-gold);
+            position: relative;
+        }
+
+        /* Decorative Corners */
+        #captureArea::before {
+            content: ""; position: absolute; top: -5px; left: -5px; width: 50px; height: 50px;
+            border-top: 3px solid var(--pure-gold); border-left: 3px solid var(--pure-gold);
+        }
+        #captureArea::after {
+            content: ""; position: absolute; bottom: -5px; right: -5px; width: 50px; height: 50px;
+            border-bottom: 3px solid var(--pure-gold); border-right: 3px solid var(--pure-gold);
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+        
+        th { 
+            font-family: 'Orbitron', sans-serif;
+            color: var(--pure-gold); 
+            padding: 15px; 
+            font-size: 1.1rem; 
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: rgba(184, 134, 11, 0.1);
+        }
+
+        .esports-row {
+            animation: slideInLeft 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+            transition: 0.3s;
+        }
+
+        td { 
+            padding: 20px; 
+            background: var(--metallic);
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-top: 1px solid #444;
+            border-bottom: 1px solid #444;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Rank Column Styling */
+        td:first-child { 
+            border-left: 5px solid var(--pure-gold); 
+            color: var(--pure-gold);
+            font-family: 'Orbitron', sans-serif;
+            width: 100px;
+        }
+
+        /* Kill Count Styling */
+        td:last-child { 
+            border-right: 5px solid var(--pure-gold); 
+            color: #fff; 
+            background: linear-gradient(90deg, #111, #4b3905);
+            width: 150px;
+        }
+
+        .admin-panel { 
+            margin-top: 60px; 
+            background: #0f0f0f; 
+            padding: 40px; 
+            border: 2px solid #222;
+        }
+
+        input { 
+            padding: 15px; 
+            margin: 10px; 
+            border: 1px solid var(--dark-gold); 
+            background: #000; 
+            color: var(--pure-gold);
+            width: 250px;
+            outline: none;
+        }
+
+        button { 
+            padding: 15px 40px; 
+            margin: 10px; 
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold; 
+            cursor: pointer; 
+            border: 1px solid var(--pure-gold); 
+            text-transform: uppercase;
+            background: transparent;
+            color: var(--pure-gold);
+        }
+
+        .btn-add { background: var(--pure-gold); color: black; }
+        .btn-download { border: 1px solid var(--pure-gold); }
+    </style>
+</head>
+<body>
+
+    <div id="captureArea">
+        <h1 class="main-header">
+            <i class="fas fa-trophy"></i> 
+            STANDINGS
+            <i class="fas fa-trophy"></i>
+        </h1>
+        <table id="pointsTable">
+            <thead>
+                <tr>
+                    <th>RANK</th>
+                    <th><i class="fas fa-user-ninja"></i> SQUAD NAME</th>
+                    <th><i class="fas fa-skull"></i> KILLS</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="admin-panel">
+        <h2 style="color: var(--dark-gold); font-family: 'Orbitron';">BATTLE LOG</h2>
+        <input type="text" id="teamName" placeholder="TEAM NAME">
+        <input type="number" id="killPts" placeholder="TOTAL KILLS">
+        <br>
+        <button class="btn-add" onclick="addTeam()">Update Rank</button>
+        <button class="btn-download" onclick="downloadTable()">Save Image</button>
+        <button class="btn-clear" onclick="clearTable()" style="color: red; border-color: red;">Reset Board</button>
+    </div>
+
+    <script>
+        let teams = [];
+
+        function addTeam() {
+            const name = document.getElementById('teamName').value.trim();
+            const kills = parseInt(document.getElementById('killPts').value) || 0;
+            if(!name) return;
+
+            const existingIndex = teams.findIndex(t => t.name.toLowerCase() === name.toLowerCase());
+            if(existingIndex > -1) {
+                teams[existingIndex].kills = kills;
+            } else {
+                teams.push({ name, kills });
+            }
+
+            updateTable();
+            document.getElementById('teamName').value = '';
+            document.getElementById('killPts').value = '';
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            // FIXED ORDER - NO SWAPPING
+            teams.forEach((team, index) => {
+                const row = document.createElement('tr');
+                row.className = 'esports-row';
+                row.style.animationDelay = `${index * 0.1}s`;
+                
+                row.innerHTML = `
+                    <td>RANK ${index + 1}</td>
+                    <td style="text-align: left; padding-left: 40px;">${team.name.toUpperCase()}</td>
+                    <td style="color: var(--pure-gold); font-family: 'Orbitron';">${team.kills}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function downloadTable() {
+            const area = document.getElementById('captureArea');
+            html2canvas(area, { backgroundColor: "#050505", scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'FF_Rank_Standings.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function clearTable() {
+            if(confirm("Wipe all data?")) {
+                teams = [];
+                updateTable();
+            }
+        }
+    </script>
+</body>
+</html>
